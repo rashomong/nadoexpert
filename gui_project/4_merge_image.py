@@ -1,7 +1,9 @@
+import os
 from tkinter import *   # __all__에다가 정의를 하지 않으면 서브모듈은 import하지 않음
 import tkinter.messagebox as msgbox
 import tkinter.ttk as ttk
 from tkinter import filedialog  # 서브모듈이기 때문에 *로 못가져옴
+from PIL import Image
 
 root=Tk()
 root.title("Nado GUI")
@@ -10,7 +12,7 @@ root.title("Nado GUI")
 def add_file():
     files = filedialog.askopenfilenames(title="이미지 파일을 선택하세요.", \
         filetypes=(("PNG 파일", "*.png"),("모든 파일", "*.*" )), \
-         initialdir=r"Screenshots")
+         initialdir=r"nadoexpert")
     # 모든 확장자 파일을 선택가능하며, 최초경로를 지정해 줄 수 있다.
     # r 을 앞에 붙이면 /r /d /t 같은 줄이나 공백 무시한다.
 
@@ -34,6 +36,47 @@ def browse_dest_path():
     txt_dest_path.delete(0, END)    #entry 이므로 0으로. txt였다면 '0.1' 로 했어야 함
     txt_dest_path.insert(0, folder_selected)
 
+# 이미지 통합 함수
+def merge_image():
+    # print(list_file.get(0,END))   # 잘 불러왔나 확인용
+    images = [Image.open(x) for x in list_file.get(0,END)]  # list_file 을 list []로 저장.
+    # size -> size[0] : width, size[1] : height
+    # widths = [x.size[0] for x in images]
+    # heights = [x.size[1] for x in images]
+    # print("width : ", widths)
+    # print("height : " ,heights )
+
+    # 5_unzip 활용하기
+    widths, heights = zip(*(x.size[0] for x in images))
+
+
+    
+    max_width, total_height = max(widths), sum(heights)
+    # print("max width :", max_width) 
+    # print("total height :", total_height)
+
+    # 스케치북 준비
+    result_img = Image.new("RGB", (max_width, total_height), (255,255,255)) # 배경은 흰색
+    y_offset = 0    # y 위치
+    # for img in images:
+    #     result_img.paste(img, (0,y_offset)) # images에 있는 사진들을 특정 위치에 삽입 paste = 붙여넣다
+    #     y_offset += img.size[1]  # height값 만큼 더해주어서 다음 이미지 삽입
+    
+    # 위처럼 해도 되나, progress 바 갱신을 위해서 idx 변수도 추가해서 다시 씀
+    for idx, img in enumerate(images) : 
+        result_img.paste(img, (0,y_offset))
+        y_offset += img.size[1]
+
+        progress = (idx + 1) / len(images) * 100
+        p_var.set(progress)
+        progress_bar.update()
+
+
+    dest_path = os.path.join(txt_dest_path.get(), "nado_photo.jpg") # 결과물의 경로
+    result_img.save(dest_path)
+    msgbox.showinfo("알림", "작업이 완료되었습니다.")
+
+
 def start ():
     # 각 옵션들 값 확인
     print("가로넓이 : " , cmb_width.get())
@@ -50,6 +93,8 @@ def start ():
         msgbox.showwarning("경고", "저장 경로를 선택하세요")
         return
 
+    # 이미지 합치기 작업
+    merge_image()
 
 
 # 파일 프레임

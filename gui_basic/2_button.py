@@ -18,9 +18,15 @@ btn4.pack()
 btn5 = Button(root, fg="red", bg="yellow", text="버튼5")
 btn5.pack()
 
-photo = PhotoImage(file="gui_basic\image.png")
+photo = PhotoImage(file="image.png")        #window에서는 gui_basic/image.png 해야 된다
 btn6 = Button(root, image=photo) 
 btn6.pack()
+
+def btncmd():
+    print("버튼이 출력되었어요.")
+      
+btn7 = Button(root, text="동작하는 버튼", command=btncmd)
+btn7.pack()
 
 root.mainloop() #꺼지지 않도록 루프
 
